@@ -75,6 +75,7 @@ int Query_SerializeResults(QueryPlan *qex) {
     }
     count += serializeResult(qex, &r, qex->opts.flags);
     RSFieldMap_Free(r.fields, 0);
+    r.fields = NULL;
   } while (rc != RS_RESULT_EOF);
   if (count == 0) {
     RedisModule_ReplyWithLongLong(ctx, ResultProcessor_Total(qex->rootProcessor));
@@ -171,6 +172,11 @@ QueryPlan *Query_BuildPlan(RedisSearchCtx *ctx, QueryParseCtx *parsedQuery, RSSe
     return NULL;
   }
   plan->execCtx.rootFilter = plan->rootFilter;
+  if (opts->cursor && plan->rootFilter) {
+    RSIndexResult *dummy = NULL;
+    plan->rootFilter->SkipTo(plan->rootFilter->ctx, opts->cursor, &dummy);
+  }
+
   plan->rootProcessor = pcb(plan, chainBuilderContext);
   if (!plan->rootProcessor) {
     QueryPlan_Free(plan);
