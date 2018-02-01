@@ -74,8 +74,6 @@ int Query_SerializeResults(QueryPlan *qex) {
       count++;
     }
     count += serializeResult(qex, &r, qex->opts.flags);
-
-    IndexResult_Free(r.indexResult);
     RSFieldMap_Free(r.fields, 0);
   } while (rc != RS_RESULT_EOF);
   if (count == 0) {
